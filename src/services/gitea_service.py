@@ -3,20 +3,19 @@ import requests
 from typing import List, Dict, Any
 from ..core.config import Config
 from ..core.models import PRDetails
-from github import Github
-from github.Repository import Repository
+from gitea import Gitea
 
-class GitHubService:
-  def __init__(self, gh_client: Github):
-    """Initialize GitHub service with a client."""
-    self.gh_client = gh_client
+class GiteaService:
+  def __init__(self, gitea_client: Gitea):
+    """Initialize Gitea service with a client."""
+    self.gitea_client = gitea_client
 
   def get_pr_details(self, event_path: str) -> PRDetails:
     """
-    Extract pull request details from GitHub event data.
+    Extract pull request details from Gitea event data.
     
     Args:
-      event_path: Path to GitHub event JSON file
+      event_path: Path to Gitea event JSON file
     Returns:
       PRDetails object containing PR information
     """
@@ -25,8 +24,8 @@ class GitHubService:
     repo_full_name = event_data["repository"]["full_name"]
     owner, repo = repo_full_name.split("/")
     
-    repo_obj = self.gh_client.get_repo(repo_full_name)
-    pr = repo_obj.get_pull(pull_number)
+    repo_obj = self.gitea_client.get_repo(repo_full_name)
+    pr = repo_obj.get_pull_request(pull_number)
 
     return PRDetails(owner, repo_obj.name, pull_number, pr.title, pr.body)
 
@@ -37,10 +36,10 @@ class GitHubService:
     Returns:
       Diff content as string or empty string if request fails
     """
-    api_url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pull_number}.diff"
+    api_url = f"{Config.GITEA_URL}/api/v1/repos/{owner}/{repo}/pulls/{pull_number}.diff"
     headers = {
-      'Authorization': f'Bearer {Config.GITHUB_TOKEN}',
-      'Accept': 'application/vnd.github.v3.diff'
+      'Authorization': f'token {Config.GITEA_TOKEN}',
+      'Accept': 'application/vnd.gitea.v3.diff'
     }
 
     response = requests.get(api_url, headers=headers)
@@ -48,17 +47,17 @@ class GitHubService:
 
   def create_review_comment(self, pr_details: PRDetails, comments: List[Dict[str, Any]]) -> None:
     """Create a review comment on the pull request."""
-    repo = self.gh_client.get_repo(f"{pr_details.owner}/{pr_details.repo}")
-    pr = repo.get_pull(pr_details.pull_number)
+    repo = self.gitea_client.get_repo(f"{pr_details.owner}/{pr_details.repo}")
+    pr = repo.get_pull_request(pr_details.pull_number)
     
     pr.create_review(
       body="AI generated review comments",
       comments=comments,
-      event="COMMENT"
+      review_state="COMMENT"
     )
 
   def _load_event_data(self, event_path: str) -> Dict:
-    """Load GitHub event data from JSON file."""
+    """Load Gitea event data from JSON file."""
     with open(event_path, "r") as f:
       return json.load(f)
 

@@ -12,8 +12,8 @@ class OpenAIService(BaseLLMService):
     
     def __init__(self):
         """Initialize the OpenAI client with configuration."""
-        self.client = OpenAI(api_key=Config.OPENAI_API_KEY)
-        self.model = Config.OPENAI_MODEL
+        self.client = OpenAI(base_url=Config.OPENAI_BASE_URL, api_key=Config.API_KEY)
+        self.model = Config.AI_MODEL
         
     def create_prompt(self, file: PatchedFile, hunk: Hunk, pr_details: PRDetails) -> str:
         """Create a prompt formatted for OpenAI's expectations."""

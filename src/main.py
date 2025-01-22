@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 import fnmatch
 from .core.config import Config
 from .core.models import PRDetails
-from .services.github_service import GitHubService
+from .services.gitea_service import GiteaService
 from .services.ai_service import AIService
 from .utils.diff_parser import DiffParser
 from .utils.code_analyzer import CodeAnalyzer
@@ -17,7 +17,7 @@ class PRReviewApplication:
   def _setup_services(self) -> None:
     """Set up all required services."""
     gh_client = Config.initialize_clients()
-    self.github_service = GitHubService(gh_client)
+    self.github_service = GiteaService(gh_client)
     self.ai_service = AIService()
     self.code_analyzer = CodeAnalyzer(self.ai_service)
     self.diff_parser = DiffParser()

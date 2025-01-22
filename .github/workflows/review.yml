@@ -30,14 +30,13 @@ jobs:
           
       - name: Run LLM AI Code Reviewer
         env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_GITHUB_TOKEN }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
-          HUMAN_LANGUAGE: ${{ vars.HUMAN_LANGUAGE }}
-          PRIMARY_MODEL: ${{ vars.PRIMARY_MODEL }}
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          GITEA_URL: ${{ secrets.GITEA_URL }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+          AI_MODEL: ${{ secrets.AI_MODEL }}
+          INPUT_EXCLUDE: ${{ secrets.INPUT_EXCLUDE }}
+          HUMAN_LANGUAGE: ${{ secrets.HUMAN_LANGUAGE }}
+
         run: |
           python3.10 -m src.main src/main.py
