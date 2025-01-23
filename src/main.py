@@ -46,6 +46,9 @@ class PRReviewApplication:
   def _process_pr(self) -> bool:
     """Process the PR and create review comments if needed."""
     pr_details = self.github_service.get_pr_details(os.environ["GITHUB_EVENT_PATH"])
+    # event_path = """/Users/jason/gitea/llm-code-reviewer/event_path.txt"""
+    # pr_details = self.github_service.get_pr_details(event_path)
+    
     diff = self.github_service.get_diff(pr_details.owner, pr_details.repo, pr_details.pull_number)
     
     if not diff:
@@ -55,17 +58,22 @@ class PRReviewApplication:
     parsed_diff = self.diff_parser.parse_diff(diff)
     filtered_diff = self._filter_diff(parsed_diff)
     comments = self.code_analyzer.analyze_code(filtered_diff, pr_details)
-    
-    if comments:
-      self.github_service.create_review_comment(pr_details, comments)
+    self.github_service.create_review_comment(pr_details, comments)
     return True
 
   def _filter_diff(self, parsed_diff: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Filter diff based on exclude patterns from environment variables."""
+    """
+    This function filters the list of file changes (parsed_diff) based on the exclude patterns.
+    Exclude patterns are retrieved from environment variables to determine which files should be ignored.
+    
+    :param parsed_diff: List of dictionaries containing details of each file changed in the PR, 
+                    including the file path and changes.
+    :return: A filtered list of dictionaries that excludes files matching the specified patterns.
+    """
     exclude_patterns = self._get_exclude_patterns()
     return [
       file for file in parsed_diff
-      if not any(fnmatch.fnmatch(file.get('path', ''), pattern) 
+      if not any(fnmatch.fnmatch(file.get('path', '').strip(), pattern) 
             for pattern in exclude_patterns)
     ]
 

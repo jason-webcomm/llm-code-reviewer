@@ -9,7 +9,7 @@ class Config:
     API_KEY = os.environ.get('API_KEY')
     AI_MODEL = os.environ.get('AI_MODEL', 'Qwen/Qwen2.5-Coder-32B-Instruct-AWQ')
     
-    _raw_language: str = os.environ.get('HUMAN_LANGUAGE', 'zh')
+    _raw_language: str = os.environ.get('HUMAN_LANGUAGE', 'TW')
     HUMAN_LANGUAGE = LanguageValidator.validate_language(_raw_language)
     
     @classmethod

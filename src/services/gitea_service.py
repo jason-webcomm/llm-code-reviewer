@@ -3,7 +3,7 @@ import requests
 from typing import List, Dict, Any
 from ..core.config import Config
 from ..core.models import PRDetails
-from gitea import Gitea
+from gitea import Gitea, Repository
 
 class GiteaService:
   def __init__(self, gitea_client: Gitea):
@@ -21,13 +21,15 @@ class GiteaService:
     """
     event_data = self._load_event_data(event_path)
     pull_number = self._extract_pull_number(event_data)
+    
     repo_full_name = event_data["repository"]["full_name"]
     owner, repo = repo_full_name.split("/")
+    url = f"/repos/{owner}/{repo}"
+    repo_obj = self.gitea_client.requests_get(url)
+    url = f"/repos/{owner}/{repo}/pulls/{pull_number}"
+    pr_obj = self.gitea_client.requests_get(url)
     
-    repo_obj = self.gitea_client.get_repo(repo_full_name)
-    pr = repo_obj.get_pull_request(pull_number)
-
-    return PRDetails(owner, repo_obj.name, pull_number, pr.title, pr.body)
+    return PRDetails(owner, repo, pull_number, pr_obj['title'], pr_obj['body'])
 
   def get_diff(self, owner: str, repo: str, pull_number: int) -> str:
     """
@@ -44,17 +46,52 @@ class GiteaService:
 
     response = requests.get(api_url, headers=headers)
     return response.text if response.status_code == 200 else ""
+  def convert_comment(self, comments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """ 
+    Convert the comments to modify the position key based on the side value and remove lineNumber and side.
+    
+    Args:
+      comments: List of dictionaries representing comments
+    Returns:
+      List of dictionaries representing the converted comments
+    """
+    converted_comments = []
+    for comment in comments:
+        new_comment = comment.copy()
+        if comment.get('side') == 'RIGHT':
+            new_comment['new_position'] = comment['line']+1
+            new_comment['old_position'] = 0
+        elif comment.get('side') == 'LEFT':
+            new_comment['old_position'] = comment['line']+1
+            new_comment['new_position'] = 0
+        del new_comment['line']
+        del new_comment['side']
+        converted_comments.append(new_comment)
+    return converted_comments
 
   def create_review_comment(self, pr_details: PRDetails, comments: List[Dict[str, Any]]) -> None:
     """Create a review comment on the pull request."""
-    repo = self.gitea_client.get_repo(f"{pr_details.owner}/{pr_details.repo}")
-    pr = repo.get_pull_request(pr_details.pull_number)
+    comments = self.convert_comment(comments)
+    url = f"/repos/{pr_details.owner}/{pr_details.repo}/pulls/{pr_details.pull_number}/reviews"
     
-    pr.create_review(
-      body="AI generated review comments",
-      comments=comments,
-      review_state="COMMENT"
-    )
+    if comments:
+      pr = self.gitea_client.requests_post(
+        url,
+        data={
+                "body": "AI generated review comments",
+                "comments": comments,
+                "event": "COMMENT"
+              }
+        )
+    else:
+      pr = self.gitea_client.requests_post(
+        url,
+        data={
+                "body": "AI generated APPROVED",
+                "comments": comments,
+                "event": "APPROVED"
+              }
+        )
 
   def _load_event_data(self, event_path: str) -> Dict:
     """Load Gitea event data from JSON file."""

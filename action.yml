@@ -14,15 +14,15 @@ inputs:
     description: 'Gitea URL to interact with the repository'
     required: true
   OPENAI_BASE_URL:
-    description: 'Open AI URL to interact with the repository'
+    description: 'AI URL to interact with the repository'
     required: true
   API_KEY:
-    description: 'Google Gemini API key'
+    description: 'AI API key'
     required: false
   AI_MODEL:
-    description: 'The Gemini model to use for code review'
+    description: 'The AI model to use for code review'
     required: false
-    default: 'gemini-1.5-flash-002'
+    default: 'gpt-4o'
   INPUT_EXCLUDE:
     description: 'Comma-separated list of file patterns to exclude'
     required: false
@@ -30,33 +30,11 @@ inputs:
   HUMAN_LANGUAGE:
     description: 'The human language to use for code review'
     required: false
-    default: 'en'
+
 runs:
-  using: 'composite'
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-
-    - name: Install dependencies
-      shell: bash
-      run: |
-        python -m pip install --upgrade pip
-        REQUIREMENTS_PATH="$GITHUB_ACTION_PATH/requirements.txt"
-        if [ -f "$REQUIREMENTS_PATH" ]; then
-          pip install -r "$REQUIREMENTS_PATH"
-        else
-          echo "Error: requirements.txt not found in $GITHUB_ACTION_PATH"
-          exit 1
-        fi
-
-    - name: Run code review
-      shell: bash
-      env:
+  using: docker
+  image: Dockerfile
+  env:
         GITEA_TOKEN: ${{ inputs.GITEA_TOKEN }}
         GITEA_URL: ${{ inputs.GITEA_URL }}
         OPENAI_BASE_URL: ${{ inputs.OPENAI_BASE_URL }}
@@ -64,13 +42,3 @@ runs:
         AI_MODEL: ${{ inputs.AI_MODEL }}
         INPUT_EXCLUDE: ${{ inputs.INPUT_EXCLUDE }}
         HUMAN_LANGUAGE: ${{ inputs.HUMAN_LANGUAGE }}
-        
-      run: |
-        MAIN_PY_PATH="$GITHUB_ACTION_PATH/src/main.py"
-        if [ -f "$MAIN_PY_PATH" ]; then
-          export PYTHONPATH="$GITHUB_ACTION_PATH:$PYTHONPATH"
-          python3.10 -m src.main
-        else
-          echo "Error: main.py not found in $GITHUB_ACTION_PATH/src/"
-          exit 1
-        fi

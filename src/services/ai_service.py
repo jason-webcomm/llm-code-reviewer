@@ -18,7 +18,7 @@ class AIService:
 
     def _initialize_service(self) -> None:
         """Initialize the appropriate LLM service based on available API keys."""
-        self.active_service = OpenAIService
+        self.active_service = OpenAIService()
 
     def check_key_model_availability(self, model: str) -> bool:
         """Check if the API key for specified model is available.

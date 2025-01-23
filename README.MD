@@ -1,5 +1,7 @@
 # LLM Code Reviewer
 
+This repossitory are forked from tusgino/llm-code-reviewer, modify for gitea and openai compatible API.
+
 This GitHub Action automatically reviews Pull Requests using multiple Language Models (LLMs) including OpenAI's GPT and Google's Gemini models. Get intelligent code reviews directly in your PR comments!
 
 ## Features
@@ -35,83 +37,52 @@ on:
 jobs:
   review:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: tusgino/llm-code-reviewer@v1
+      - uses: jason-webcomm/llm-code-reviewer@develop
         with:
-          # Required - GitHub token for PR interactions
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-          # Optional - API keys for different LLM services
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          
-          # Optional - Configure specific model versions
-          GEMINI_MODEL: 'gemini-1.5-flash-002'
-          OPENAI_MODEL: 'gpt-4o-mini'
-          ANTHROPIC_MODEL: 'claude-3-opus-20240229'
-          
+          GITEA_TOKEN: ${{ secrets.TECH_PAT }}
+          GITEA_URL: ${{ secrets.GITEA_URL }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+          AI_MODEL: "Qwen/Qwen2.5-Coder-32B-Instruct-AWQ"
           # Optional - Exclude files from review
-          INPUT_EXCLUDE: '*.md,*.txt'
-          
+          INPUT_EXCLUDE: "*.md,**/*.txt"
           # Optional - Set review language
-          HUMAN_LANGUAGE: 'en'
-          
-          # Optional - Set primary model
-          # Can use 'gemini', 'openai', 'anthropic'
-          PRIMARY_MODEL: 'gemini'
+          HUMAN_LANGUAGE: "TW"
 ```
 
 ## Inputs
 
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
-| `GITHUB_TOKEN` | GitHub token for repository interaction | Yes | - |
-| `GEMINI_API_KEY` | Google Gemini API key | No | - |
-| `OPENAI_API_KEY` | OpenAI API key | No | - |
-| `ANTHROPIC_API_KEY` | Anthropic API key | No | - |
-| `GEMINI_MODEL` | Gemini model to use | No | `gemini-1.5-flash-002` |
-| `OPENAI_MODEL` | OpenAI model to use | No | `gpt-4o-mini` |
-| `ANTHROPIC_MODEL` | Anthropic model to use | No | `claude-3-opus-20240229` |
+| `GITEA_TOKEN` | GITEA token for repository interaction | Yes | - |
+| `GITEA_URL` | GITEA URL | Yes | - |
+| `OPENAI_BASE_URL` | OpenAI compatible API URL | Yes | - |
+| `API_KEY` | AI Endpoint API key | No | - |
+| `AI_MODEL` | AI model to use | No | `gpt-4o` |
 | `INPUT_EXCLUDE` | Comma-separated file patterns to exclude | No | - |
 | `HUMAN_LANGUAGE` | Language for review comments | No | `en` |
-| `PRIMARY_MODEL` | Primary model for review (gemini, openai, anthropic) | No | `gemini` |
+
 
 ## Examples
 
 ### Basic Usage
 
 ```yaml
-- uses: tusgino/llm-code-reviewer@v1
+- uses: jason-webcomm/llm-code-reviewer@develop
   with:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-    PRIMARY_MODEL: 'gemini'
+    GITEA_TOKEN: ${{ secrets.TECH_PAT }}
+    GITEA_URL: ${{ secrets.GITEA_URL }}
+    OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+    API_KEY: ${{ secrets.API_KEY }}
+    AI_MODEL: "Qwen/Qwen2.5-Coder-32B-Instruct-AWQ"
+    # Optional - Exclude files from review
+    INPUT_EXCLUDE: ""
+    # Optional - Set review language
+    HUMAN_LANGUAGE: "TW"
 ```
 
-### Advanced Configuration
-
-```yaml
-- uses: tusgino/llm-code-reviewer@v1
-  with:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-    ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-    GEMINI_MODEL: 'gemini-1.5-flash-002'
-    OPENAI_MODEL: 'gpt-4o-mini'
-    ANTHROPIC_MODEL: 'claude-3-opus-20240229'
-    INPUT_EXCLUDE: '*.md,*.txt'
-    HUMAN_LANGUAGE: 'vi'
-    PRIMARY_MODEL: 'gemini'
-```
-
-## File Exclusion
-
-Use `INPUT_EXCLUDE` to skip reviewing certain files. Example patterns:
-- `*.md` - Exclude all Markdown files
-- `docs/*` - Exclude all files in the docs directory
-- `*.test.js,*.spec.js` - Exclude test files
 
 ## Language Support
 
@@ -119,6 +90,7 @@ Set `HUMAN_LANGUAGE` to receive reviews in your preferred language. Examples:
 - `en` - English (default)
 - `vi` - Vietnamese
 - `ja` - Japanese
+- `TW` - Taiwan
 - And more...
 
 ## Contributing
