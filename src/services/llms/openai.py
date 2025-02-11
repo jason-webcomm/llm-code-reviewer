@@ -37,6 +37,7 @@ class OpenAIService(BaseLLMService):
         - Return empty "reviews" array if no issues found
         - Use GitHub Markdown formatting in your comments
         - Do NOT suggest adding code comments
+        - Instead of checking for consistency across the codebase, provide actionable and directly applicable code changes to improve clarity, performance, or maintainability.
         - Provide feedback in language: {Config.HUMAN_LANGUAGE}
 
         Context Information:
