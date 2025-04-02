@@ -50,7 +50,11 @@ class BaseLLMService(ABC):
             str: Cleaned text
         """
         text = text.strip()
-        if text.startswith('```json'):
+        think_tag = '</think>'
+        if think_tag in text:
+            text = text.split(think_tag, 1)[1]
+            text = text.strip()
+        elif text.startswith('```json'):
             text = text[7:]
         if text.endswith('```'):
             text = text[:-3]
